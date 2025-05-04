@@ -45,6 +45,42 @@ export const createItem = async (req, res, next) => {
   }
 };
 
+export const assignItemById = async (req, res, next) => {
+  try {
+    const { Id } = req.params;
+    const [result] = await db.query("SELECT * FROM Urunler WHERE Id = ?", [Id]);
+    if (result.length === 0) {
+      return res.status(404).json({ message: "Item not found" });
+    }
+
+    const {
+      TeslimEden,
+      TeslimAlan,
+      TeslimEtmeTarihi,
+      TeslimAlmaTarihi,
+      TeslimAlindi,
+    } = req.body;
+
+    const [assignedResult] = await db.query(
+      "INSERT INTO ZimmetliUrunler (UrunId, TeslimEden, TeslimAlan, TeslimEtmeTarihi, TeslimAlmaTarihi, TeslimAlindi) Values(?,?,?,?,?,?)",
+      [
+        Id,
+        TeslimEden,
+        TeslimAlan,
+        TeslimEtmeTarihi,
+        TeslimAlmaTarihi,
+        TeslimAlindi,
+      ]
+    );
+    if (assignedResult.affectedRows === 0) {
+      return res.status(500).json({ message: "Failed to assign item" });
+    }
+    res.status(201).json({ message: "Item assigned successfully" });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const updateItem = async (req, res, next) => {
   try {
     const { Id } = req.params;
