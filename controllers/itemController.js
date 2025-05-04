@@ -27,11 +27,11 @@ export const getItemById = async (req, res, next) => {
 
 export const createItem = async (req, res, next) => {
   try {
-    const { UrunCinsi, Adet, DemirbasNo, SatNo, Fatura, FaturaTarihi } =
+    const { UrunCinsi, Adet, DemirbasNo, SatNo, FaturaNo, FaturaTarihi } =
       req.body;
     const [result] = await db.query(
       "INSERT INTO Urunler ( UrunCinsi, Adet, DemirbasNo, SatNo, FaturaNo, FaturaTarihi) VALUES (?, ?, ?, ?, ?, ?)",
-      [UrunCinsi, Adet, DemirbasNo, SatNo, Fatura, FaturaTarihi]
+      [UrunCinsi, Adet, DemirbasNo, SatNo, FaturaNo, FaturaTarihi]
     );
     if (result.affectedRows === 0) {
       return res.status(500).json({ message: "Failed to create item" });
@@ -69,6 +69,15 @@ export const deleteItem = async (req, res, next) => {
     const [result] = await db.query("DELETE FROM Urunler WHERE Id = ?", [Id]);
     if (result.affectedRows === 0) {
       return res.status(404).json({ message: "Item not found" });
+    }
+
+    // Check if this was the last item
+    const [countResult] = await db.query(
+      "SELECT COUNT(*) as count FROM Urunler"
+    );
+    if (countResult[0].count === 0) {
+      // Reset auto-increment if no items left
+      await db.query("ALTER TABLE Urunler AUTO_INCREMENT = 1");
     }
     res.status(200).json({ message: "Item deleted successfully" });
   } catch (error) {
