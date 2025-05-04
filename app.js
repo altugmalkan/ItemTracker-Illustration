@@ -1,7 +1,9 @@
 import express from "express";
 import morgan from "morgan";
 import dotenv from "dotenv";
-import router from "./routes/itemRoutes.js";
+import itemRoutes from "./routes/itemRoutes.js";
+import assignedRoutes from "./routes/assignedRoutes.js";
+import ErrorHandler from "./middleware/errorMiddleware.js";
 
 dotenv.config();
 const app = express();
@@ -11,8 +13,11 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Import routes
+app.use("/api/items", itemRoutes);
+app.use("/api/assigned", assignedRoutes);
 
-app.use("/api/items", router);
+// Error handling middleware
+app.use(ErrorHandler);
 
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
